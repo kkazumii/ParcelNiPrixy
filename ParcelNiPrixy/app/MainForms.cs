@@ -6,6 +6,7 @@ using MySql.Data.MySqlClient;
 
 namespace ParcelTrackingSystem
 {
+
     // ══════════════════════════════════════════════════════
     // PROGRAM
     // ══════════════════════════════════════════════════════
@@ -19,6 +20,7 @@ namespace ParcelTrackingSystem
             Application.Run(new LoginForm());
         }
     }
+
 
     // ══════════════════════════════════════════════════════
     // LOGIN FORM
@@ -98,6 +100,7 @@ namespace ParcelTrackingSystem
                 MessageBox.Show("Connection error: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+
 
         private Label Lbl(string t, int x, int y, int size, bool bold, Color color) =>
             new Label { Text=t, Location=new Point(x,y), AutoSize=true,
