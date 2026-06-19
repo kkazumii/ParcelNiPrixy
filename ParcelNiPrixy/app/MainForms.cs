@@ -120,7 +120,7 @@ namespace ParcelTrackingSystem
         public DashboardForm()
         {
             this.Text = "ParcelTrack – Dashboard";
-            BuildDashboard();
+            this.Load += (s, e) => BuildDashboard();
         }
 
         private void BuildDashboard()
@@ -143,17 +143,32 @@ namespace ParcelTrackingSystem
                         ("💰 Revenue",          "₱" + (row["total_revenue"]==DBNull.Value ? "0.00" : $"{Convert.ToDecimal(row["total_revenue"]):N2}"), Color.FromArgb(166,227,161))
                     };
 
+                    int cardW = 162;  // 155 card width + ~7 gap
                     int x = 0; int y = 42;
+                    int maxX = pnlContent.Width - 50; // stay inside padding
+
                     foreach (var (title, val, color) in stats)
                     {
-                        if (x > 850) { x = 0; y += 110; }
+                        if (x + cardW > maxX) { x = 0; y += 110; }
                         var card = MakeCard(x, y, 155, 95);
-                        card.Controls.Add(new Label { Text=val, Font=new Font("Segoe UI",17,FontStyle.Bold),
-                            ForeColor=color, AutoSize=true, Location=new Point(12,14) });
-                        card.Controls.Add(new Label { Text=title, Font=new Font("Segoe UI",8),
-                            ForeColor=Color.FromArgb(166,173,200), AutoSize=true, Location=new Point(12,60) });
+                        card.Controls.Add(new Label
+                        {
+                            Text = val,
+                            Font = new Font("Segoe UI", 17, FontStyle.Bold),
+                            ForeColor = color,
+                            AutoSize = true,
+                            Location = new Point(12, 14)
+                        });
+                        card.Controls.Add(new Label
+                        {
+                            Text = title,
+                            Font = new Font("Segoe UI", 8),
+                            ForeColor = Color.FromArgb(166, 173, 200),
+                            AutoSize = true,
+                            Location = new Point(12, 60)
+                        });
                         pnlContent.Controls.Add(card);
-                        x += 162;
+                        x += cardW;
                     }
                 }
             }

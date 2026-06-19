@@ -27,21 +27,26 @@ namespace ParcelTrackingSystem
             // ── Parcel selector ──
             pnlContent.Controls.Add(MakeLbl("Select Parcel:", 0, 46, true));
 
-            cmbParcel = new ComboBox {
-                Location = new Point(110, 43), Size = new Size(320, 27),
+            cmbParcel = new ComboBox
+            {
+                Location = new Point(110, 43),
+                Size = new Size(320, 27),
                 Font = new Font("Segoe UI", 9),
-                BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat, DropDownStyle = ComboBoxStyle.DropDownList
+                BackColor = Color.FromArgb(49, 50, 68),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                DropDownStyle = ComboBoxStyle.DropDownList
             };
             pnlContent.Controls.Add(cmbParcel);
 
-            var btnLoad = MakeBtn("🔍 Load", Color.FromArgb(137, 180, 250), 440, 43, 80);
+            var btnLoad = MakeBtn("🔍 Load", Color.FromArgb(137, 180, 250), 0, 44, 80);
             btnLoad.Click += (s, e) => LoadTracking();
-            pnlContent.Controls.Add(btnLoad);
 
-            var btnUpdate = MakeBtn("➕ Add Update", Color.FromArgb(166, 227, 161), 530, 43, 110);
+            var btnUpdate = MakeBtn("➕ Add Update", Color.FromArgb(166, 227, 161), 0, 44, 110);
             btnUpdate.Click += (s, e) => AddUpdate();
-            pnlContent.Controls.Add(btnUpdate);
+
+            pnlContent.Controls.AddRange(new Control[] { btnLoad, btnUpdate });
+            AnchorRowRight(pnlContent, 44, btnLoad, btnUpdate);
 
             // ── Info panel ──
             pnlInfo = new Panel {

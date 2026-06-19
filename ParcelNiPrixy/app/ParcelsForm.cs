@@ -31,10 +31,11 @@ namespace ParcelTrackingSystem
             txSearch.LostFocus += (s, e) => { if (txSearch.Text == "") txSearch.Text = "Search parcels..."; };
             txSearch.TextChanged += (s, e) => Filter();
 
-            var btnAdd    = MakeBtn("➕ Add",    Color.FromArgb(166, 227, 161), 600, 44);
-            var btnEdit   = MakeBtn("✏  Edit",   Color.FromArgb(250, 179, 135), 698, 44);
-            var btnDelete = MakeBtn("🗑  Delete", Color.FromArgb(243, 139, 168), 796, 44);
-            var btnRef    = MakeBtn("🔄",         Color.FromArgb(49, 50, 68),    894, 44, 36);
+            var btnAdd = MakeBtn("➕ Add", Color.FromArgb(166, 227, 161), 0, 44);
+            var btnEdit = MakeBtn("✏  Edit", Color.FromArgb(250, 179, 135), 0, 44);
+            var btnDelete = MakeBtn("🗑  Delete", Color.FromArgb(243, 139, 168), 0, 44);
+            var btnRef = MakeBtn("🔄", Color.FromArgb(49, 50, 68), 0, 44, 36);
+            AnchorRowRight(pnlContent, 44, btnAdd, btnEdit, btnDelete, btnRef);
 
             btnAdd.Click    += (s, e) => { using var d = new AddParcelForm(); if (d.ShowDialog() == DialogResult.OK) LoadData(); };
             btnEdit.Click   += (s, e) => Edit();
