@@ -349,12 +349,14 @@ namespace ParcelTrackingSystem
             if (lstSenderSuggest.SelectedItem is PersonItem item)
             {
                 _senderId = item.Id; _senderIsNew = false;
-                txtSenderSearch.Text  = item.Row["full_name"]?.ToString();
-                txtSenderPhone.Text   = item.Row["phone_number"]?.ToString();
-                txtSenderEmail.Text   = item.Row["email"]?.ToString();
+                txtSenderSearch.TextChanged -= SenderSearch_Changed; // ← unsubscribe
+                txtSenderSearch.Text = item.Row["full_name"]?.ToString();
+                txtSenderSearch.TextChanged += SenderSearch_Changed; // ← resubscribe
+                txtSenderPhone.Text = item.Row["phone_number"]?.ToString();
+                txtSenderEmail.Text = item.Row["email"]?.ToString();
                 txtSenderAddress.Text = item.Row["address"]?.ToString();
                 SetReadOnly(true, txtSenderPhone, txtSenderEmail, txtSenderAddress);
-                lstSenderSuggest.Visible=false; lstSenderSuggest.Height=0;
+                lstSenderSuggest.Visible = false; lstSenderSuggest.Height = 0;
                 lblSenderStatus.Text = "✅ Existing sender selected";
                 lblSenderStatus.ForeColor = Color.FromArgb(166, 227, 161);
             }
@@ -393,12 +395,14 @@ namespace ParcelTrackingSystem
             if (lstRecipSuggest.SelectedItem is PersonItem item)
             {
                 _recipientId = item.Id; _recipientIsNew = false;
-                txtRecipSearch.Text  = item.Row["full_name"]?.ToString();
-                txtRecipPhone.Text   = item.Row["phone_number"]?.ToString();
-                txtRecipEmail.Text   = item.Row["email"]?.ToString();
+                txtRecipSearch.TextChanged -= RecipSearch_Changed; // ← unsubscribe
+                txtRecipSearch.Text = item.Row["full_name"]?.ToString();
+                txtRecipSearch.TextChanged += RecipSearch_Changed; // ← resubscribe
+                txtRecipPhone.Text = item.Row["phone_number"]?.ToString();
+                txtRecipEmail.Text = item.Row["email"]?.ToString();
                 txtRecipAddress.Text = item.Row["address"]?.ToString();
                 SetReadOnly(true, txtRecipPhone, txtRecipEmail, txtRecipAddress);
-                lstRecipSuggest.Visible=false; lstRecipSuggest.Height=0;
+                lstRecipSuggest.Visible = false; lstRecipSuggest.Height = 0;
                 lblRecipStatus.Text = "✅ Existing recipient selected";
                 lblRecipStatus.ForeColor = Color.FromArgb(166, 227, 161);
             }
@@ -431,12 +435,12 @@ namespace ParcelTrackingSystem
 
             try
             {
-                var pShipId  = new MySqlParameter("p_shipment_id", MySqlDbType.VarChar, 20) { Direction = System.Data.ParameterDirection.Output };
-                var pRouteId = new MySqlParameter("p_route_id",    MySqlDbType.VarChar, 20) { Direction = System.Data.ParameterDirection.Output };
+                var pParcelId = new MySqlParameter("p_parcel_id", MySqlDbType.VarChar, 20) { Direction = System.Data.ParameterDirection.Output };
+                var pShipId = new MySqlParameter("p_shipment_id", MySqlDbType.VarChar, 20) { Direction = System.Data.ParameterDirection.Output };
+                var pRouteId = new MySqlParameter("p_route_id", MySqlDbType.VarChar, 20) { Direction = System.Data.ParameterDirection.Output };
 
                 using var conn = DatabaseHelper.GetConnection();
                 DatabaseHelper.ExecuteProcedureWithOutput(conn, "sp_create_parcel_full",
-                    new MySqlParameter("p_parcel_id",           txtParcelId.Text.Trim()),
                     new MySqlParameter("p_weight_kg",           decimal.TryParse(txtWeight.Text, out var w) ? w : (object)DBNull.Value),
                     new MySqlParameter("p_description",         txtDesc.Text.Trim()),
                     new MySqlParameter("p_parcel_type",         cmbType.SelectedItem),
@@ -461,10 +465,10 @@ namespace ParcelTrackingSystem
                     new MySqlParameter("p_est_delivery",        dtpEst.Value.Date),
                     new MySqlParameter("p_amount",              decimal.TryParse(txtAmount.Text, out var a) ? a : 0m),
                     new MySqlParameter("p_method",              cmbMethod.SelectedItem),
-                    pShipId, pRouteId);
+                    pParcelId, pShipId, pRouteId);
 
-                MessageBox.Show($"Parcel saved!\nShipment ID: {pShipId.Value}", "Success",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show($"Parcel saved!\nParcel ID: {pParcelId.Value}\nShipment ID: {pShipId.Value}",
+                    "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK;
                 this.Close();
             }

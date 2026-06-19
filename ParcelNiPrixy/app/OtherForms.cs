@@ -13,7 +13,7 @@ namespace ParcelTrackingSystem
     {
         private DataGridView dgv;
         private TextBox txSearch;
-        
+
         public RidersForm()
         {
             this.Text = "ParcelTrack – Riders";
@@ -29,15 +29,15 @@ namespace ParcelTrackingSystem
             txSearch.Text = "Search riders...";
             txSearch.TextChanged += (s, e) => Filter();
 
-            var btnAdd    = MakeBtn("➕ Add",    Color.FromArgb(166, 227, 161), 600, 44);
-            var btnEdit   = MakeBtn("✏  Edit",   Color.FromArgb(250, 179, 135), 698, 44);
+            var btnAdd = MakeBtn("➕ Add", Color.FromArgb(166, 227, 161), 600, 44);
+            var btnEdit = MakeBtn("✏  Edit", Color.FromArgb(250, 179, 135), 698, 44);
             var btnDelete = MakeBtn("🗑  Delete", Color.FromArgb(243, 139, 168), 796, 44);
-            var btnRef    = MakeBtn("🔄",         Color.FromArgb(49,  50,  68),  894, 44, 36);
+            var btnRef = MakeBtn("🔄", Color.FromArgb(49, 50, 68), 894, 44, 36);
 
-            btnAdd.Click    += (s, e) => { using var d = new RiderDialog(); if (d.ShowDialog() == DialogResult.OK) Load(); };
-            btnEdit.Click   += (s, e) => Edit();
+            btnAdd.Click += (s, e) => { using var d = new RiderDialog(); if (d.ShowDialog() == DialogResult.OK) Load(); };
+            btnEdit.Click += (s, e) => Edit();
             btnDelete.Click += (s, e) => Delete();
-            btnRef.Click    += (s, e) => Load();
+            btnRef.Click += (s, e) => Load();
 
             pnlContent.Controls.AddRange(new Control[] { txSearch, btnAdd, btnEdit, btnDelete, btnRef });
 
@@ -90,8 +90,8 @@ namespace ParcelTrackingSystem
     public class RiderDialog : Form
     {
         private readonly string _id;
-        private readonly bool   _isEdit;
-        private TextBox  txtId, txtName, txtPhone, txtEmail, txtLicense, txtVehicle;
+        private readonly bool _isEdit;
+        private TextBox txtId, txtName, txtPhone, txtEmail, txtLicense, txtVehicle;
         private ComboBox cmbStatus;
 
         public RiderDialog(string id = null)
@@ -105,17 +105,23 @@ namespace ParcelTrackingSystem
             this.MaximizeBox = false;
 
             int y = 18;
-            L("Rider ID",      y); txtId      = T(160, y); y += 36;
-            L("Full Name",     y); txtName    = T(160, y); y += 36;
-            L("Phone",         y); txtPhone   = T(160, y); y += 36;
-            L("Email",         y); txtEmail   = T(160, y); y += 36;
+            L("Rider ID", y); txtId = T(160, y); y += 36;
+            L("Full Name", y); txtName = T(160, y); y += 36;
+            L("Phone", y); txtPhone = T(160, y); y += 36;
+            L("Email", y); txtEmail = T(160, y); y += 36;
             L("License Plate", y); txtLicense = T(160, y); y += 36;
-            L("Vehicle Type",  y); txtVehicle = T(160, y); y += 36;
-            L("Status",        y);
-            cmbStatus = new ComboBox { Location=new Point(160,y), Size=new Size(180,25),
-                BackColor=Color.FromArgb(49,50,68), ForeColor=Color.White,
-                FlatStyle=FlatStyle.Flat, DropDownStyle=ComboBoxStyle.DropDownList,
-                Font=new Font("Segoe UI",9) };
+            L("Vehicle Type", y); txtVehicle = T(160, y); y += 36;
+            L("Status", y);
+            cmbStatus = new ComboBox
+            {
+                Location = new Point(160, y),
+                Size = new Size(180, 25),
+                BackColor = Color.FromArgb(49, 50, 68),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                DropDownStyle = ComboBoxStyle.DropDownList,
+                Font = new Font("Segoe UI", 9)
+            };
             cmbStatus.Items.AddRange(new[] { "active", "inactive" });
             cmbStatus.SelectedIndex = 0;
             this.Controls.Add(cmbStatus); y += 46;
@@ -134,13 +140,13 @@ namespace ParcelTrackingSystem
                 foreach (DataRow r in dt.Rows)
                     if (r["rider_id"]?.ToString() == _id)
                     {
-                        txtId.Text      = r["rider_id"]?.ToString();
-                        txtName.Text    = r["full_name"]?.ToString();
-                        txtPhone.Text   = r["phone_number"]?.ToString();
-                        txtEmail.Text   = r["email"]?.ToString();
+                        txtId.Text = r["rider_id"]?.ToString();
+                        txtName.Text = r["full_name"]?.ToString();
+                        txtPhone.Text = r["phone_number"]?.ToString();
+                        txtEmail.Text = r["email"]?.ToString();
                         txtLicense.Text = r["license_plate"]?.ToString();
                         txtVehicle.Text = r["vehicle_type"]?.ToString();
-                        cmbStatus.Text  = r["status"]?.ToString();
+                        cmbStatus.Text = r["status"]?.ToString();
                         break;
                     }
             }
@@ -155,26 +161,26 @@ namespace ParcelTrackingSystem
             {
                 string proc = _isEdit ? "sp_update_rider" : "sp_create_rider";
                 DatabaseHelper.ExecuteProcedureNonQuery(proc,
-                    new MySqlParameter("p_id",      txtId.Text.Trim()),
-                    new MySqlParameter("p_name",    txtName.Text.Trim()),
-                    new MySqlParameter("p_phone",   txtPhone.Text.Trim()),
-                    new MySqlParameter("p_email",   txtEmail.Text.Trim()),
+                    new MySqlParameter("p_id", txtId.Text.Trim()),
+                    new MySqlParameter("p_name", txtName.Text.Trim()),
+                    new MySqlParameter("p_phone", txtPhone.Text.Trim()),
+                    new MySqlParameter("p_email", txtEmail.Text.Trim()),
                     new MySqlParameter("p_license", txtLicense.Text.Trim()),
                     new MySqlParameter("p_vehicle", txtVehicle.Text.Trim()),
-                    new MySqlParameter("p_status",  cmbStatus.SelectedItem));
+                    new MySqlParameter("p_status", cmbStatus.SelectedItem));
                 MessageBox.Show("Saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK; this.Close();
             }
             catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
         }
 
-        private void L(string t, int y) => this.Controls.Add(new Label { Text=t, Location=new Point(20,y+3), AutoSize=true, Font=new Font("Segoe UI",9,FontStyle.Bold), ForeColor=Color.FromArgb(166,173,200) });
-        private TextBox T(int x, int y) { var tx = new TextBox { Location=new Point(x,y), Size=new Size(260,25), Font=new Font("Segoe UI",9), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.White, BorderStyle=BorderStyle.FixedSingle }; this.Controls.Add(tx); return tx; }
+        private void L(string t, int y) => this.Controls.Add(new Label { Text = t, Location = new Point(20, y + 3), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.FromArgb(166, 173, 200) });
+        private TextBox T(int x, int y) { var tx = new TextBox { Location = new Point(x, y), Size = new Size(260, 25), Font = new Font("Segoe UI", 9), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle }; this.Controls.Add(tx); return tx; }
         private void Btns(int y)
         {
-            var s = new Button { Text="💾 Save", Location=new Point(160,y), Size=new Size(90,30), BackColor=Color.FromArgb(166,227,161), ForeColor=Color.FromArgb(30,30,46), FlatStyle=FlatStyle.Flat, Cursor=Cursors.Hand };
+            var s = new Button { Text = "💾 Save", Location = new Point(160, y), Size = new Size(90, 30), BackColor = Color.FromArgb(166, 227, 161), ForeColor = Color.FromArgb(30, 30, 46), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
             s.FlatAppearance.BorderSize = 0; s.Click += Save;
-            var c = new Button { Text="Cancel", Location=new Point(260,y), Size=new Size(80,30), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.FromArgb(205,214,244), FlatStyle=FlatStyle.Flat, Cursor=Cursors.Hand, DialogResult=DialogResult.Cancel };
+            var c = new Button { Text = "Cancel", Location = new Point(260, y), Size = new Size(80, 30), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.FromArgb(205, 214, 244), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand, DialogResult = DialogResult.Cancel };
             c.FlatAppearance.BorderSize = 0;
             this.Controls.AddRange(new Control[] { s, c });
             this.Height = y + 80;
@@ -204,15 +210,15 @@ namespace ParcelTrackingSystem
             txSearch.Text = "Search senders...";
             txSearch.TextChanged += (s, e) => Filter();
 
-            var btnAdd    = MakeBtn("➕ Add",    Color.FromArgb(166, 227, 161), 600, 44);
-            var btnEdit   = MakeBtn("✏  Edit",   Color.FromArgb(250, 179, 135), 698, 44);
+            var btnAdd = MakeBtn("➕ Add", Color.FromArgb(166, 227, 161), 600, 44);
+            var btnEdit = MakeBtn("✏  Edit", Color.FromArgb(250, 179, 135), 698, 44);
             var btnDelete = MakeBtn("🗑  Delete", Color.FromArgb(243, 139, 168), 796, 44);
-            var btnRef    = MakeBtn("🔄",         Color.FromArgb(49,  50,  68),  894, 44, 36);
+            var btnRef = MakeBtn("🔄", Color.FromArgb(49, 50, 68), 894, 44, 36);
 
-            btnAdd.Click    += (s, e) => { using var d = new PersonDialog("Sender"); if (d.ShowDialog() == DialogResult.OK) Load(); };
-            btnEdit.Click   += (s, e) => Edit();
+            btnAdd.Click += (s, e) => { using var d = new PersonDialog("Sender"); if (d.ShowDialog() == DialogResult.OK) Load(); };
+            btnEdit.Click += (s, e) => Edit();
             btnDelete.Click += (s, e) => Delete();
-            btnRef.Click    += (s, e) => Load();
+            btnRef.Click += (s, e) => Load();
 
             pnlContent.Controls.AddRange(new Control[] { txSearch, btnAdd, btnEdit, btnDelete, btnRef });
 
@@ -281,15 +287,15 @@ namespace ParcelTrackingSystem
             txSearch.Text = "Search recipients...";
             txSearch.TextChanged += (s, e) => Filter();
 
-            var btnAdd    = MakeBtn("➕ Add",    Color.FromArgb(166, 227, 161), 600, 44);
-            var btnEdit   = MakeBtn("✏  Edit",   Color.FromArgb(250, 179, 135), 698, 44);
+            var btnAdd = MakeBtn("➕ Add", Color.FromArgb(166, 227, 161), 600, 44);
+            var btnEdit = MakeBtn("✏  Edit", Color.FromArgb(250, 179, 135), 698, 44);
             var btnDelete = MakeBtn("🗑  Delete", Color.FromArgb(243, 139, 168), 796, 44);
-            var btnRef    = MakeBtn("🔄",         Color.FromArgb(49,  50,  68),  894, 44, 36);
+            var btnRef = MakeBtn("🔄", Color.FromArgb(49, 50, 68), 894, 44, 36);
 
-            btnAdd.Click    += (s, e) => { using var d = new PersonDialog("Recipient"); if (d.ShowDialog() == DialogResult.OK) Load(); };
-            btnEdit.Click   += (s, e) => Edit();
+            btnAdd.Click += (s, e) => { using var d = new PersonDialog("Recipient"); if (d.ShowDialog() == DialogResult.OK) Load(); };
+            btnEdit.Click += (s, e) => Edit();
             btnDelete.Click += (s, e) => Delete();
-            btnRef.Click    += (s, e) => Load();
+            btnRef.Click += (s, e) => Load();
 
             pnlContent.Controls.AddRange(new Control[] { txSearch, btnAdd, btnEdit, btnDelete, btnRef });
 
@@ -342,7 +348,7 @@ namespace ParcelTrackingSystem
     {
         private readonly string _entity; // "Sender" or "Recipient"
         private readonly string _id;
-        private readonly bool   _isEdit;
+        private readonly bool _isEdit;
         private TextBox txtId, txtName, txtPhone, txtEmail, txtAddress;
 
         public PersonDialog(string entity, string id = null)
@@ -356,17 +362,17 @@ namespace ParcelTrackingSystem
             this.MaximizeBox = false;
 
             int y = 18;
-            L($"{entity} ID", y); txtId      = T(160, y); y += 36;
-            L("Full Name",    y); txtName    = T(160, y); y += 36;
-            L("Phone",        y); txtPhone   = T(160, y); y += 36;
-            L("Email",        y); txtEmail   = T(160, y); y += 36;
-            L("Address",      y); txtAddress = T(160, y, 280); y += 46;
+            L($"{entity} ID", y); txtId = T(160, y); y += 36;
+            L("Full Name", y); txtName = T(160, y); y += 36;
+            L("Phone", y); txtPhone = T(160, y); y += 36;
+            L("Email", y); txtEmail = T(160, y); y += 36;
+            L("Address", y); txtAddress = T(160, y, 280); y += 46;
 
             if (_isEdit) { txtId.ReadOnly = true; txtId.BackColor = Color.FromArgb(24, 24, 37); }
 
-            var btnS = new Button { Text="💾 Save", Location=new Point(160,y), Size=new Size(90,30), BackColor=Color.FromArgb(166,227,161), ForeColor=Color.FromArgb(30,30,46), FlatStyle=FlatStyle.Flat, Cursor=Cursors.Hand };
+            var btnS = new Button { Text = "💾 Save", Location = new Point(160, y), Size = new Size(90, 30), BackColor = Color.FromArgb(166, 227, 161), ForeColor = Color.FromArgb(30, 30, 46), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
             btnS.FlatAppearance.BorderSize = 0; btnS.Click += Save;
-            var btnC = new Button { Text="Cancel", Location=new Point(260,y), Size=new Size(80,30), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.FromArgb(205,214,244), FlatStyle=FlatStyle.Flat, Cursor=Cursors.Hand, DialogResult=DialogResult.Cancel };
+            var btnC = new Button { Text = "Cancel", Location = new Point(260, y), Size = new Size(80, 30), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.FromArgb(205, 214, 244), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand, DialogResult = DialogResult.Cancel };
             btnC.FlatAppearance.BorderSize = 0;
             this.Controls.AddRange(new Control[] { btnS, btnC });
             this.Height = y + 80;
@@ -385,10 +391,10 @@ namespace ParcelTrackingSystem
                 {
                     var r = dt.Rows[0];
                     string idCol = _entity == "Sender" ? "sender_id" : "recipient_id";
-                    txtId.Text      = r[idCol]?.ToString();
-                    txtName.Text    = r["full_name"]?.ToString();
-                    txtPhone.Text   = r["phone_number"]?.ToString();
-                    txtEmail.Text   = r["email"]?.ToString();
+                    txtId.Text = r[idCol]?.ToString();
+                    txtName.Text = r["full_name"]?.ToString();
+                    txtPhone.Text = r["phone_number"]?.ToString();
+                    txtEmail.Text = r["email"]?.ToString();
                     txtAddress.Text = r["address"]?.ToString();
                 }
             }
@@ -402,13 +408,13 @@ namespace ParcelTrackingSystem
             try
             {
                 string proc = _entity == "Sender"
-                    ? (_isEdit ? "sp_update_sender"    : "sp_create_sender")
+                    ? (_isEdit ? "sp_update_sender" : "sp_create_sender")
                     : (_isEdit ? "sp_update_recipient" : "sp_create_recipient");
                 DatabaseHelper.ExecuteProcedureNonQuery(proc,
-                    new MySqlParameter("p_id",      txtId.Text.Trim()),
-                    new MySqlParameter("p_name",    txtName.Text.Trim()),
-                    new MySqlParameter("p_phone",   txtPhone.Text.Trim()),
-                    new MySqlParameter("p_email",   txtEmail.Text.Trim()),
+                    new MySqlParameter("p_id", txtId.Text.Trim()),
+                    new MySqlParameter("p_name", txtName.Text.Trim()),
+                    new MySqlParameter("p_phone", txtPhone.Text.Trim()),
+                    new MySqlParameter("p_email", txtEmail.Text.Trim()),
                     new MySqlParameter("p_address", txtAddress.Text.Trim()));
                 MessageBox.Show("Saved!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK; this.Close();
@@ -416,8 +422,8 @@ namespace ParcelTrackingSystem
             catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
         }
 
-        private void L(string t, int y) => this.Controls.Add(new Label { Text=t, Location=new Point(20,y+3), AutoSize=true, Font=new Font("Segoe UI",9,FontStyle.Bold), ForeColor=Color.FromArgb(166,173,200) });
-        private TextBox T(int x, int y, int w = 260) { var tx = new TextBox { Location=new Point(x,y), Size=new Size(w,25), Font=new Font("Segoe UI",9), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.White, BorderStyle=BorderStyle.FixedSingle }; this.Controls.Add(tx); return tx; }
+        private void L(string t, int y) => this.Controls.Add(new Label { Text = t, Location = new Point(20, y + 3), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.FromArgb(166, 173, 200) });
+        private TextBox T(int x, int y, int w = 260) { var tx = new TextBox { Location = new Point(x, y), Size = new Size(w, 25), Font = new Font("Segoe UI", 9), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle }; this.Controls.Add(tx); return tx; }
     }
 
     // ══════════════════════════════════════════════════════
@@ -444,10 +450,10 @@ namespace ParcelTrackingSystem
             txSearch.TextChanged += (s, e) => Filter();
 
             var btnEdit = MakeBtn("✏  Edit Status", Color.FromArgb(250, 179, 135), 600, 44, 115);
-            var btnRef  = MakeBtn("🔄",              Color.FromArgb(49,  50,  68),  724, 44, 36);
+            var btnRef = MakeBtn("🔄", Color.FromArgb(49, 50, 68), 724, 44, 36);
 
             btnEdit.Click += (s, e) => Edit();
-            btnRef.Click  += (s, e) => Load();
+            btnRef.Click += (s, e) => Load();
 
             pnlContent.Controls.AddRange(new Control[] { txSearch, btnEdit, btnRef });
 
@@ -480,7 +486,7 @@ namespace ParcelTrackingSystem
         private void Edit()
         {
             if (dgv.CurrentRow == null) { MessageBox.Show("Select a payment first."); return; }
-            string payId  = dgv.CurrentRow.Cells["payment_id"].Value?.ToString();
+            string payId = dgv.CurrentRow.Cells["payment_id"].Value?.ToString();
             string status = dgv.CurrentRow.Cells["payment_status"].Value?.ToString();
             string method = dgv.CurrentRow.Cells["method"].Value?.ToString();
             string amount = dgv.CurrentRow.Cells["amount"].Value?.ToString();
@@ -492,8 +498,8 @@ namespace ParcelTrackingSystem
     public class PaymentDialog : Form
     {
         private readonly string _payId;
-        private ComboBox     cmbStatus, cmbMethod;
-        private TextBox      txtAmount;
+        private ComboBox cmbStatus, cmbMethod;
+        private TextBox txtAmount;
         private DateTimePicker dtp;
 
         public PaymentDialog(string payId, string currentStatus, string currentMethod, string currentAmount)
@@ -508,16 +514,16 @@ namespace ParcelTrackingSystem
 
             int y = 18;
             L("Payment ID", y);
-            this.Controls.Add(new Label { Text=payId, Font=new Font("Segoe UI",9,FontStyle.Bold), ForeColor=Color.FromArgb(137,180,250), AutoSize=true, Location=new Point(155,y+3) });
+            this.Controls.Add(new Label { Text = payId, Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.FromArgb(137, 180, 250), AutoSize = true, Location = new Point(155, y + 3) });
             y += 36;
 
             L("Amount (₱)", y);
-            txtAmount = new TextBox { Location=new Point(155,y), Size=new Size(150,25), Font=new Font("Segoe UI",9), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.White, BorderStyle=BorderStyle.FixedSingle, Text=currentAmount };
+            txtAmount = new TextBox { Location = new Point(155, y), Size = new Size(150, 25), Font = new Font("Segoe UI", 9), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.White, BorderStyle = BorderStyle.FixedSingle, Text = currentAmount };
             this.Controls.Add(txtAmount); y += 36;
 
             L("Method", y);
             cmbMethod = C(155, y);
-            cmbMethod.Items.AddRange(new[]{"Cash on Delivery","GCash","PayPal","Credit Card","Bank Transfer"});
+            cmbMethod.Items.AddRange(new[] { "Cash on Delivery", "GCash", "PayPal", "Credit Card", "Bank Transfer" });
             cmbMethod.Text = currentMethod; y += 36;
 
             L("Status", y);
@@ -526,12 +532,12 @@ namespace ParcelTrackingSystem
             cmbStatus.Text = currentStatus; y += 36;
 
             L("Payment Date", y);
-            dtp = new DateTimePicker { Location=new Point(155,y), Size=new Size(180,25), Format=DateTimePickerFormat.Short };
+            dtp = new DateTimePicker { Location = new Point(155, y), Size = new Size(180, 25), Format = DateTimePickerFormat.Short };
             this.Controls.Add(dtp); y += 46;
 
-            var btnS = new Button { Text="💾 Save", Location=new Point(155,y), Size=new Size(90,30), BackColor=Color.FromArgb(166,227,161), ForeColor=Color.FromArgb(30,30,46), FlatStyle=FlatStyle.Flat, Cursor=Cursors.Hand };
+            var btnS = new Button { Text = "💾 Save", Location = new Point(155, y), Size = new Size(90, 30), BackColor = Color.FromArgb(166, 227, 161), ForeColor = Color.FromArgb(30, 30, 46), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand };
             btnS.FlatAppearance.BorderSize = 0; btnS.Click += Save;
-            var btnC = new Button { Text="Cancel", Location=new Point(255,y), Size=new Size(80,30), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.FromArgb(205,214,244), FlatStyle=FlatStyle.Flat, Cursor=Cursors.Hand, DialogResult=DialogResult.Cancel };
+            var btnC = new Button { Text = "Cancel", Location = new Point(255, y), Size = new Size(80, 30), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.FromArgb(205, 214, 244), FlatStyle = FlatStyle.Flat, Cursor = Cursors.Hand, DialogResult = DialogResult.Cancel };
             btnC.FlatAppearance.BorderSize = 0;
             this.Controls.AddRange(new Control[] { btnS, btnC });
             this.Height = y + 80;
@@ -543,18 +549,18 @@ namespace ParcelTrackingSystem
             {
                 DatabaseHelper.ExecuteProcedureNonQuery("sp_update_payment",
                     new MySqlParameter("p_payment_id", _payId),
-                    new MySqlParameter("p_amount",     decimal.TryParse(txtAmount.Text, out var a) ? a : 0m),
-                    new MySqlParameter("p_method",     cmbMethod.SelectedItem ?? cmbMethod.Text),
-                    new MySqlParameter("p_status",     cmbStatus.SelectedItem ?? cmbStatus.Text),
-                    new MySqlParameter("p_date",       dtp.Value.Date));
+                    new MySqlParameter("p_amount", decimal.TryParse(txtAmount.Text, out var a) ? a : 0m),
+                    new MySqlParameter("p_method", cmbMethod.SelectedItem ?? cmbMethod.Text),
+                    new MySqlParameter("p_status", cmbStatus.SelectedItem ?? cmbStatus.Text),
+                    new MySqlParameter("p_date", dtp.Value.Date));
                 MessageBox.Show("Payment updated!", "Success", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 this.DialogResult = DialogResult.OK; this.Close();
             }
             catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
         }
 
-        private void L(string t, int y) => this.Controls.Add(new Label { Text=t, Location=new Point(20,y+3), AutoSize=true, Font=new Font("Segoe UI",9,FontStyle.Bold), ForeColor=Color.FromArgb(166,173,200) });
-        private ComboBox C(int x, int y) { var c = new ComboBox { Location=new Point(x,y), Size=new Size(200,25), BackColor=Color.FromArgb(49,50,68), ForeColor=Color.White, FlatStyle=FlatStyle.Flat, DropDownStyle=ComboBoxStyle.DropDownList, Font=new Font("Segoe UI",9) }; this.Controls.Add(c); return c; }
+        private void L(string t, int y) => this.Controls.Add(new Label { Text = t, Location = new Point(20, y + 3), AutoSize = true, Font = new Font("Segoe UI", 9, FontStyle.Bold), ForeColor = Color.FromArgb(166, 173, 200) });
+        private ComboBox C(int x, int y) { var c = new ComboBox { Location = new Point(x, y), Size = new Size(200, 25), BackColor = Color.FromArgb(49, 50, 68), ForeColor = Color.White, FlatStyle = FlatStyle.Flat, DropDownStyle = ComboBoxStyle.DropDownList, Font = new Font("Segoe UI", 9) }; this.Controls.Add(c); return c; }
     }
 
     // ══════════════════════════════════════════════════════
@@ -599,8 +605,8 @@ namespace ParcelTrackingSystem
             try
             {
                 using var conn = DatabaseHelper.GetConnection();
-                using var cmd  = new MySqlCommand("SELECT log_id, table_name, action, record_id, change_time, details FROM audit_log ORDER BY change_time DESC", conn);
-                using var da   = new MySqlDataAdapter(cmd);
+                using var cmd = new MySqlCommand("SELECT log_id, table_name, action, record_id, change_time, details FROM audit_log ORDER BY change_time DESC", conn);
+                using var da = new MySqlDataAdapter(cmd);
                 var dt = new DataTable();
                 da.Fill(dt);
                 dgv.DataSource = dt;
@@ -615,6 +621,67 @@ namespace ParcelTrackingSystem
                 string q = txSearch.Text.Trim().Replace("'", "''");
                 dt.DefaultView.RowFilter = string.IsNullOrEmpty(q) ? "" :
                     $"table_name LIKE '%{q}%' OR action LIKE '%{q}%' OR record_id LIKE '%{q}%' OR details LIKE '%{q}%'";
+            }
+        }
+    }
+
+    // ══════════════════════════════════════════════════════
+    // SHIPMENTS FORM
+    // ══════════════════════════════════════════════════════
+    public class ShipmentsForm : BaseForm
+    {
+        private DataGridView dgv;
+        private TextBox txSearch;
+
+        public ShipmentsForm()
+        {
+            this.Text = "ParcelTrack – Shipments";
+            Build();
+            LoadData();
+        }
+
+        private void Build()
+        {
+            pnlContent.Controls.Add(PageTitle("🚚  Shipments"));
+
+            txSearch = MakeTxt(0, 46, 260);
+            txSearch.Text = "Search shipments...";
+            txSearch.GotFocus += (s, e) => { if (txSearch.Text == "Search shipments...") txSearch.Text = ""; };
+            txSearch.LostFocus += (s, e) => { if (txSearch.Text == "") txSearch.Text = "Search shipments..."; };
+            txSearch.TextChanged += (s, e) => Filter();
+
+            var btnRef = MakeBtn("🔄", Color.FromArgb(49, 50, 68), 600, 44, 36);
+            btnRef.Click += (s, e) => LoadData();
+
+            var note = MakeLbl("ℹ️  Shipments are created automatically when a parcel is added. 1 parcel = 1 shipment.", 0, 84);
+            note.ForeColor = Color.FromArgb(137, 180, 250);
+
+            pnlContent.Controls.AddRange(new Control[] { txSearch, btnRef, note });
+
+            dgv = MakeGrid(110);
+            dgv.Size = new Size(pnlContent.Width - 50, pnlContent.Height - 140);
+            pnlContent.Controls.Add(dgv);
+            pnlContent.Resize += (s, e) => dgv.Size = new Size(pnlContent.Width - 50, pnlContent.Height - 140);
+        }
+
+        private void LoadData()
+        {
+            try
+            {
+                var dt = DatabaseHelper.ExecuteProcedureTable("sp_get_all_shipments");
+                dgv.DataSource = dt;
+            }
+            catch (Exception ex) { MessageBox.Show("Error: " + ex.Message); }
+        }
+
+        private void Filter()
+        {
+            if (txSearch.Text == "Search shipments...") return;
+            if (dgv.DataSource is System.Data.DataTable dt)
+            {
+                string q = txSearch.Text.Trim().Replace("'", "''");
+                dt.DefaultView.RowFilter = string.IsNullOrEmpty(q) ? "" :
+                    $"shipment_id LIKE '%{q}%' OR rider_name LIKE '%{q}%' OR origin LIKE '%{q}%'";
             }
         }
     }

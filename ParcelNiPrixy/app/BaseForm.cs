@@ -59,6 +59,7 @@ namespace ParcelTrackingSystem
             var navItems = new[] {
                 ("🏠", "Dashboard"),
                 ("📦", "Parcels"),
+                ("🚚", "Shipments"),
                 ("📍", "Tracking"),
                 ("🚴", "Riders"),
                 ("👤", "Senders"),
@@ -114,6 +115,7 @@ namespace ParcelTrackingSystem
             Form next = tag switch {
                 "Dashboard"  => new DashboardForm(),
                 "Parcels"    => new ParcelsForm(),
+                "Shipments" => new ShipmentsForm(),
                 "Tracking"   => new TrackingForm(),
                 "Riders"     => new RidersForm(),
                 "Senders"    => new SendersForm(),
