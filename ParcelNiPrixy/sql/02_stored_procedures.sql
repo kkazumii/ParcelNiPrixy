@@ -1,14 +1,12 @@
 -- ============================================================
--- STORED PROCEDURES v2
--- Parcel Tracking and Delivery Management System
+-- STORED PROCEDURES v3
+-- 1 Parcel = 1 Shipment
 -- ============================================================
 
 USE parcel_tracking_db;
 DELIMITER $$
 
--- ============================================================
--- AUTH
--- ============================================================
+-- ── AUTH ─────────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_login$$
 CREATE PROCEDURE sp_login(
     IN  p_username VARCHAR(50),
@@ -18,17 +16,13 @@ CREATE PROCEDURE sp_login(
 )
 BEGIN
     DECLARE v_count INT DEFAULT 0;
-    SELECT COUNT(*), MAX(full_name)
-    INTO v_count, p_fullname
-    FROM users
-    WHERE username = p_username AND password = p_password;
-    SET p_success = IF(v_count > 0, 1, 0);
-    IF p_success = 0 THEN SET p_fullname = NULL; END IF;
+    SELECT COUNT(*), MAX(full_name) INTO v_count, p_fullname
+    FROM users WHERE username=p_username AND password=p_password;
+    SET p_success = IF(v_count>0,1,0);
+    IF p_success=0 THEN SET p_fullname=NULL; END IF;
 END$$
 
--- ============================================================
--- PSGC
--- ============================================================
+-- ── PSGC ─────────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_provinces$$
 CREATE PROCEDURE sp_get_provinces()
 BEGIN
@@ -41,13 +35,10 @@ CREATE PROCEDURE sp_get_municipalities(IN p_province_id VARCHAR(10))
 BEGIN
     SELECT municipality_id, municipality_name
     FROM ph_municipality
-    WHERE province_id = p_province_id
-    ORDER BY municipality_name;
+    WHERE province_id=p_province_id ORDER BY municipality_name;
 END$$
 
--- ============================================================
--- SENDER
--- ============================================================
+-- ── SENDER ───────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_all_senders$$
 CREATE PROCEDURE sp_get_all_senders()
 BEGIN SELECT * FROM sender ORDER BY full_name; END$$
@@ -56,19 +47,19 @@ DROP PROCEDURE IF EXISTS sp_search_senders$$
 CREATE PROCEDURE sp_search_senders(IN p_query VARCHAR(100))
 BEGIN
     SELECT * FROM sender
-    WHERE full_name LIKE CONCAT('%', p_query, '%')
-       OR phone_number LIKE CONCAT('%', p_query, '%')
-       OR email LIKE CONCAT('%', p_query, '%')
+    WHERE full_name LIKE CONCAT('%',p_query,'%')
+       OR phone_number LIKE CONCAT('%',p_query,'%')
+       OR email LIKE CONCAT('%',p_query,'%')
     ORDER BY full_name LIMIT 10;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_get_sender_by_id$$
-CREATE PROCEDURE sp_get_sender_by_id(IN p_id VARCHAR(10))
-BEGIN SELECT * FROM sender WHERE sender_id = p_id; END$$
+CREATE PROCEDURE sp_get_sender_by_id(IN p_id VARCHAR(20))
+BEGIN SELECT * FROM sender WHERE sender_id=p_id; END$$
 
 DROP PROCEDURE IF EXISTS sp_create_sender$$
 CREATE PROCEDURE sp_create_sender(
-    IN p_id VARCHAR(10), IN p_name VARCHAR(100),
+    IN p_id VARCHAR(20), IN p_name VARCHAR(100),
     IN p_phone VARCHAR(15), IN p_email VARCHAR(100), IN p_address VARCHAR(255))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
@@ -80,26 +71,24 @@ END$$
 
 DROP PROCEDURE IF EXISTS sp_update_sender$$
 CREATE PROCEDURE sp_update_sender(
-    IN p_id VARCHAR(10), IN p_name VARCHAR(100),
+    IN p_id VARCHAR(20), IN p_name VARCHAR(100),
     IN p_phone VARCHAR(15), IN p_email VARCHAR(100), IN p_address VARCHAR(255))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
-        UPDATE sender SET full_name=p_name,phone_number=p_phone,email=p_email,address=p_address
-        WHERE sender_id=p_id;
+        UPDATE sender SET full_name=p_name,phone_number=p_phone,
+            email=p_email,address=p_address WHERE sender_id=p_id;
     COMMIT;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_delete_sender$$
-CREATE PROCEDURE sp_delete_sender(IN p_id VARCHAR(10))
+CREATE PROCEDURE sp_delete_sender(IN p_id VARCHAR(20))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION; DELETE FROM sender WHERE sender_id=p_id; COMMIT;
 END$$
 
--- ============================================================
--- RECIPIENT
--- ============================================================
+-- ── RECIPIENT ─────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_all_recipients$$
 CREATE PROCEDURE sp_get_all_recipients()
 BEGIN SELECT * FROM recipient ORDER BY full_name; END$$
@@ -108,19 +97,19 @@ DROP PROCEDURE IF EXISTS sp_search_recipients$$
 CREATE PROCEDURE sp_search_recipients(IN p_query VARCHAR(100))
 BEGIN
     SELECT * FROM recipient
-    WHERE full_name LIKE CONCAT('%', p_query, '%')
-       OR phone_number LIKE CONCAT('%', p_query, '%')
-       OR email LIKE CONCAT('%', p_query, '%')
+    WHERE full_name LIKE CONCAT('%',p_query,'%')
+       OR phone_number LIKE CONCAT('%',p_query,'%')
+       OR email LIKE CONCAT('%',p_query,'%')
     ORDER BY full_name LIMIT 10;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_get_recipient_by_id$$
-CREATE PROCEDURE sp_get_recipient_by_id(IN p_id VARCHAR(10))
-BEGIN SELECT * FROM recipient WHERE recipient_id = p_id; END$$
+CREATE PROCEDURE sp_get_recipient_by_id(IN p_id VARCHAR(20))
+BEGIN SELECT * FROM recipient WHERE recipient_id=p_id; END$$
 
 DROP PROCEDURE IF EXISTS sp_create_recipient$$
 CREATE PROCEDURE sp_create_recipient(
-    IN p_id VARCHAR(10), IN p_name VARCHAR(100),
+    IN p_id VARCHAR(20), IN p_name VARCHAR(100),
     IN p_phone VARCHAR(15), IN p_email VARCHAR(100), IN p_address VARCHAR(255))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
@@ -132,26 +121,24 @@ END$$
 
 DROP PROCEDURE IF EXISTS sp_update_recipient$$
 CREATE PROCEDURE sp_update_recipient(
-    IN p_id VARCHAR(10), IN p_name VARCHAR(100),
+    IN p_id VARCHAR(20), IN p_name VARCHAR(100),
     IN p_phone VARCHAR(15), IN p_email VARCHAR(100), IN p_address VARCHAR(255))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
-        UPDATE recipient SET full_name=p_name,phone_number=p_phone,email=p_email,address=p_address
-        WHERE recipient_id=p_id;
+        UPDATE recipient SET full_name=p_name,phone_number=p_phone,
+            email=p_email,address=p_address WHERE recipient_id=p_id;
     COMMIT;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_delete_recipient$$
-CREATE PROCEDURE sp_delete_recipient(IN p_id VARCHAR(10))
+CREATE PROCEDURE sp_delete_recipient(IN p_id VARCHAR(20))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION; DELETE FROM recipient WHERE recipient_id=p_id; COMMIT;
 END$$
 
--- ============================================================
--- RIDER
--- ============================================================
+-- ── RIDER ─────────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_all_riders$$
 CREATE PROCEDURE sp_get_all_riders()
 BEGIN SELECT * FROM rider ORDER BY full_name; END$$
@@ -162,7 +149,7 @@ BEGIN SELECT * FROM rider WHERE status='active' ORDER BY full_name; END$$
 
 DROP PROCEDURE IF EXISTS sp_create_rider$$
 CREATE PROCEDURE sp_create_rider(
-    IN p_id VARCHAR(10), IN p_name VARCHAR(100), IN p_phone VARCHAR(15),
+    IN p_id VARCHAR(20), IN p_name VARCHAR(100), IN p_phone VARCHAR(15),
     IN p_email VARCHAR(100), IN p_license VARCHAR(20),
     IN p_vehicle VARCHAR(50), IN p_status VARCHAR(10))
 BEGIN
@@ -175,7 +162,7 @@ END$$
 
 DROP PROCEDURE IF EXISTS sp_update_rider$$
 CREATE PROCEDURE sp_update_rider(
-    IN p_id VARCHAR(10), IN p_name VARCHAR(100), IN p_phone VARCHAR(15),
+    IN p_id VARCHAR(20), IN p_name VARCHAR(100), IN p_phone VARCHAR(15),
     IN p_email VARCHAR(100), IN p_license VARCHAR(20),
     IN p_vehicle VARCHAR(50), IN p_status VARCHAR(10))
 BEGIN
@@ -188,141 +175,134 @@ BEGIN
 END$$
 
 DROP PROCEDURE IF EXISTS sp_delete_rider$$
-CREATE PROCEDURE sp_delete_rider(IN p_id VARCHAR(10))
+CREATE PROCEDURE sp_delete_rider(IN p_id VARCHAR(20))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION; DELETE FROM rider WHERE rider_id=p_id; COMMIT;
 END$$
 
--- ============================================================
--- ROUTE
--- ============================================================
+-- ── ROUTE ─────────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_all_routes$$
 CREATE PROCEDURE sp_get_all_routes()
 BEGIN
-    SELECT r.*,
-        CONCAT(r.origin_municipality,', ',r.origin_province) AS origin_display,
-        CONCAT(r.dest_municipality,', ',r.dest_province) AS dest_display
-    FROM route r ORDER BY r.origin_province;
+    SELECT *,
+        CONCAT(origin_municipality,', ',origin_province) AS origin_display,
+        CONCAT(dest_municipality,', ',dest_province) AS dest_display
+    FROM route ORDER BY origin_province;
 END$$
 
-DROP PROCEDURE IF EXISTS sp_find_or_create_route$$
-CREATE PROCEDURE sp_find_or_create_route(
-    IN  p_origin_province     VARCHAR(100),
-    IN  p_origin_municipality VARCHAR(100),
-    IN  p_dest_province       VARCHAR(100),
-    IN  p_dest_municipality   VARCHAR(100),
-    OUT p_route_id            VARCHAR(10)
+-- ── PARCEL (master transaction: creates everything at once) ───
+DROP PROCEDURE IF EXISTS sp_create_parcel_full$$
+CREATE PROCEDURE sp_create_parcel_full(
+    IN p_parcel_id           VARCHAR(20),
+    IN p_weight_kg           DECIMAL(8,2),
+    IN p_description         VARCHAR(255),
+    IN p_parcel_type         VARCHAR(20),
+    IN p_sender_id           VARCHAR(20),
+    IN p_sender_name         VARCHAR(100),
+    IN p_sender_phone        VARCHAR(15),
+    IN p_sender_email        VARCHAR(100),
+    IN p_sender_address      VARCHAR(255),
+    IN p_sender_is_new       TINYINT,
+    IN p_recipient_id        VARCHAR(20),
+    IN p_recipient_name      VARCHAR(100),
+    IN p_recipient_phone     VARCHAR(15),
+    IN p_recipient_email     VARCHAR(100),
+    IN p_recipient_address   VARCHAR(255),
+    IN p_recipient_is_new    TINYINT,
+    IN p_origin_province     VARCHAR(100),
+    IN p_origin_municipality VARCHAR(100),
+    IN p_dest_province       VARCHAR(100),
+    IN p_dest_municipality   VARCHAR(100),
+    IN p_rider_id            VARCHAR(20),
+    IN p_ship_date           DATE,
+    IN p_est_delivery        DATE,
+    IN p_amount              DECIMAL(10,2),
+    IN p_method              VARCHAR(30),
+    OUT p_shipment_id        VARCHAR(20),
+    OUT p_route_id           VARCHAR(20)
 )
 BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-    -- Try to find existing route
-    SELECT route_id INTO p_route_id FROM route
-    WHERE origin_province=p_origin_province
-      AND origin_municipality=p_origin_municipality
-      AND dest_province=p_dest_province
-      AND dest_municipality=p_dest_municipality
-    LIMIT 1;
+    DECLARE v_route_id    VARCHAR(20);
+    DECLARE v_shipment_id VARCHAR(20);
+    DECLARE v_pay_id      VARCHAR(20);
+    DECLARE v_track_id    VARCHAR(20);
 
-    -- If not found, create it
-    IF p_route_id IS NULL THEN
-        START TRANSACTION;
-        SET p_route_id = CONCAT('rt', DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
-        INSERT INTO route(route_id,origin_province,origin_municipality,dest_province,dest_municipality)
-        VALUES(p_route_id,p_origin_province,p_origin_municipality,p_dest_province,p_dest_municipality);
-        COMMIT;
-    END IF;
-END$$
-
--- ============================================================
--- SHIPMENT
--- ============================================================
-DROP PROCEDURE IF EXISTS sp_get_all_shipments$$
-CREATE PROCEDURE sp_get_all_shipments()
-BEGIN
-    SELECT s.shipment_id, s.shipment_date, s.estimated_delivery, s.status,
-        r.full_name AS rider_name,
-        CONCAT(rt.origin_municipality,', ',rt.origin_province) AS origin,
-        CONCAT(rt.dest_municipality,', ',rt.dest_province) AS destination,
-        COUNT(p.parcel_id) AS parcel_count
-    FROM shipment s
-    JOIN rider r   ON s.rider_id = r.rider_id
-    JOIN route rt  ON s.route_id = rt.route_id
-    LEFT JOIN parcel p ON p.shipment_id = s.shipment_id
-    GROUP BY s.shipment_id
-    ORDER BY s.shipment_date DESC;
-END$$
-
--- Find a pending shipment for a given route and date
-DROP PROCEDURE IF EXISTS sp_find_pending_shipment$$
-CREATE PROCEDURE sp_find_pending_shipment(
-    IN  p_route_id     VARCHAR(10),
-    IN  p_ship_date    DATE,
-    OUT p_shipment_id  VARCHAR(20)
-)
-BEGIN
-    SELECT shipment_id INTO p_shipment_id
-    FROM shipment
-    WHERE route_id = p_route_id
-      AND shipment_date = p_ship_date
-      AND status = 'pending'
-    LIMIT 1;
-END$$
-
--- Create a new shipment
-DROP PROCEDURE IF EXISTS sp_create_shipment$$
-CREATE PROCEDURE sp_create_shipment(
-    IN p_shipment_id   VARCHAR(20),
-    IN p_rider_id      VARCHAR(10),
-    IN p_route_id      VARCHAR(10),
-    IN p_ship_date     DATE,
-    IN p_est_delivery  DATE
-)
-BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
-        INSERT INTO shipment(shipment_id,rider_id,route_id,shipment_date,estimated_delivery,status)
-        VALUES(p_shipment_id,p_rider_id,p_route_id,p_ship_date,p_est_delivery,'pending');
+
+        -- 1. Create sender if new
+        IF p_sender_is_new=1 THEN
+            INSERT INTO sender(sender_id,full_name,phone_number,email,address)
+            VALUES(p_sender_id,p_sender_name,p_sender_phone,p_sender_email,p_sender_address);
+        END IF;
+
+        -- 2. Create recipient if new
+        IF p_recipient_is_new=1 THEN
+            INSERT INTO recipient(recipient_id,full_name,phone_number,email,address)
+            VALUES(p_recipient_id,p_recipient_name,p_recipient_phone,p_recipient_email,p_recipient_address);
+        END IF;
+
+        -- 3. Find or create route
+        SELECT route_id INTO v_route_id FROM route
+        WHERE origin_province=p_origin_province
+          AND origin_municipality=p_origin_municipality
+          AND dest_province=p_dest_province
+          AND dest_municipality=p_dest_municipality
+        LIMIT 1;
+
+        IF v_route_id IS NULL THEN
+            SET v_route_id = CONCAT('RT',DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
+            INSERT INTO route(route_id,origin_province,origin_municipality,dest_province,dest_municipality)
+            VALUES(v_route_id,p_origin_province,p_origin_municipality,p_dest_province,p_dest_municipality);
+        END IF;
+        SET p_route_id = v_route_id;
+
+        -- 4. Create shipment (1 per parcel)
+        SET v_shipment_id = CONCAT('SH',DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
+        INSERT INTO shipment(shipment_id,rider_id,route_id,shipment_date,estimated_delivery)
+        VALUES(v_shipment_id,p_rider_id,v_route_id,p_ship_date,p_est_delivery);
+        SET p_shipment_id = v_shipment_id;
+
+        -- 5. Create parcel
+        INSERT INTO parcel(parcel_id,shipment_id,sender_id,recipient_id,weight_kg,description,parcel_type)
+        VALUES(p_parcel_id,v_shipment_id,p_sender_id,p_recipient_id,p_weight_kg,p_description,p_parcel_type);
+
+        -- 6. Create payment
+        SET v_pay_id = CONCAT('PAY',DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
+        INSERT INTO payment(payment_id,parcel_id,amount,method,payment_status)
+        VALUES(v_pay_id,p_parcel_id,p_amount,p_method,'pending');
+
+        -- 7. Initial tracking status
+        SET v_track_id = CONCAT('TR',DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
+        INSERT INTO tracking_status(tracking_id,parcel_id,status_type,timestamp,notes)
+        VALUES(v_track_id,p_parcel_id,'preparing to ship',NOW(),'Parcel received and logged');
+
     COMMIT;
 END$$
 
-DROP PROCEDURE IF EXISTS sp_update_shipment_status$$
-CREATE PROCEDURE sp_update_shipment_status(
-    IN p_shipment_id VARCHAR(20),
-    IN p_status      VARCHAR(20)
-)
-BEGIN
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-    START TRANSACTION;
-        UPDATE shipment SET status=p_status WHERE shipment_id=p_shipment_id;
-    COMMIT;
-END$$
-
--- ============================================================
--- PARCEL
--- ============================================================
 DROP PROCEDURE IF EXISTS sp_get_all_parcels$$
 CREATE PROCEDURE sp_get_all_parcels()
 BEGIN
     SELECT
-        p.parcel_id, p.shipment_id, p.weight_kg, p.description, p.parcel_type, p.created_at,
+        p.parcel_id, p.weight_kg, p.description, p.parcel_type, p.created_at,
         s.full_name   AS sender_name,   s.phone_number AS sender_phone,
         r.full_name   AS recipient_name, r.phone_number AS recipient_phone,
         r.address     AS recipient_address,
         rd.full_name  AS rider_name,
         CONCAT(rt.origin_municipality,', ',rt.origin_province) AS origin,
         CONCAT(rt.dest_municipality,', ',rt.dest_province)     AS destination,
-        sh.shipment_date, sh.estimated_delivery, sh.status AS shipment_status,
+        sh.shipment_id, sh.shipment_date, sh.estimated_delivery,
         py.payment_id, py.amount, py.method, py.payment_status,
         (SELECT ts.status_type FROM tracking_status ts
-         WHERE ts.parcel_id = p.parcel_id
+         WHERE ts.parcel_id=p.parcel_id
          ORDER BY ts.timestamp DESC LIMIT 1) AS current_status
     FROM parcel p
-    JOIN sender    s   ON p.sender_id    = s.sender_id
-    JOIN recipient r   ON p.recipient_id = r.recipient_id
-    JOIN shipment  sh  ON p.shipment_id  = sh.shipment_id
-    JOIN rider     rd  ON sh.rider_id    = rd.rider_id
-    JOIN route     rt  ON sh.route_id    = rt.route_id
+    JOIN sender    s  ON p.sender_id    = s.sender_id
+    JOIN recipient r  ON p.recipient_id = r.recipient_id
+    JOIN shipment  sh ON p.shipment_id  = sh.shipment_id
+    JOIN rider     rd ON sh.rider_id    = rd.rider_id
+    JOIN route     rt ON sh.route_id    = rt.route_id
     LEFT JOIN payment py ON py.parcel_id = p.parcel_id
     ORDER BY p.created_at DESC;
 END$$
@@ -340,145 +320,35 @@ BEGIN
     WHERE p.parcel_id=p_id;
 END$$
 
--- Main procedure: find/create route → find/create shipment → create parcel + payment
-DROP PROCEDURE IF EXISTS sp_create_parcel_full$$
-CREATE PROCEDURE sp_create_parcel_full(
-    -- Parcel info
-    IN p_parcel_id        VARCHAR(20),
-    IN p_weight_kg        DECIMAL(8,2),
-    IN p_description      VARCHAR(255),
-    IN p_parcel_type      VARCHAR(20),
-    -- Sender (existing or new)
-    IN p_sender_id        VARCHAR(10),
-    IN p_sender_name      VARCHAR(100),
-    IN p_sender_phone     VARCHAR(15),
-    IN p_sender_email     VARCHAR(100),
-    IN p_sender_address   VARCHAR(255),
-    IN p_sender_is_new    TINYINT,
-    -- Recipient (existing or new)
-    IN p_recipient_id     VARCHAR(10),
-    IN p_recipient_name   VARCHAR(100),
-    IN p_recipient_phone  VARCHAR(15),
-    IN p_recipient_email  VARCHAR(100),
-    IN p_recipient_address VARCHAR(255),
-    IN p_recipient_is_new  TINYINT,
-    -- Route
-    IN p_origin_province      VARCHAR(100),
-    IN p_origin_municipality  VARCHAR(100),
-    IN p_dest_province        VARCHAR(100),
-    IN p_dest_municipality    VARCHAR(100),
-    -- Shipment
-    IN p_rider_id        VARCHAR(10),
-    IN p_ship_date       DATE,
-    IN p_est_delivery    DATE,
-    -- Payment
-    IN p_amount          DECIMAL(10,2),
-    IN p_method          VARCHAR(30),
-    -- Output
-    OUT p_shipment_id    VARCHAR(20),
-    OUT p_is_new_shipment TINYINT,
-    OUT p_route_id       VARCHAR(10)
-)
-BEGIN
-    DECLARE v_route_id    VARCHAR(10);
-    DECLARE v_shipment_id VARCHAR(20);
-    DECLARE v_pay_id      VARCHAR(20);
-    DECLARE v_track_id    VARCHAR(20);
-
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
-    START TRANSACTION;
-
-        -- 1. Create sender if new
-        IF p_sender_is_new = 1 THEN
-            INSERT INTO sender(sender_id,full_name,phone_number,email,address)
-            VALUES(p_sender_id,p_sender_name,p_sender_phone,p_sender_email,p_sender_address);
-        END IF;
-
-        -- 2. Create recipient if new
-        IF p_recipient_is_new = 1 THEN
-            INSERT INTO recipient(recipient_id,full_name,phone_number,email,address)
-            VALUES(p_recipient_id,p_recipient_name,p_recipient_phone,p_recipient_email,p_recipient_address);
-        END IF;
-
-        -- 3. Find or create route
-        SELECT route_id INTO v_route_id FROM route
-        WHERE origin_province=p_origin_province
-          AND origin_municipality=p_origin_municipality
-          AND dest_province=p_dest_province
-          AND dest_municipality=p_dest_municipality
-        LIMIT 1;
-
-        IF v_route_id IS NULL THEN
-            SET v_route_id = CONCAT('rt', DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
-            INSERT INTO route(route_id,origin_province,origin_municipality,dest_province,dest_municipality)
-            VALUES(v_route_id,p_origin_province,p_origin_municipality,p_dest_province,p_dest_municipality);
-        END IF;
-        SET p_route_id = v_route_id;
-
-        -- 4. Find existing pending shipment for same route + date + rider
-        SELECT shipment_id INTO v_shipment_id FROM shipment
-        WHERE route_id=v_route_id
-          AND rider_id=p_rider_id
-          AND shipment_date=p_ship_date
-          AND status='pending'
-        LIMIT 1;
-
-        IF v_shipment_id IS NULL THEN
-            SET v_shipment_id = CONCAT('SH', DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
-            INSERT INTO shipment(shipment_id,rider_id,route_id,shipment_date,estimated_delivery,status)
-            VALUES(v_shipment_id,p_rider_id,v_route_id,p_ship_date,p_est_delivery,'pending');
-            SET p_is_new_shipment = 1;
-        ELSE
-            SET p_is_new_shipment = 0;
-        END IF;
-        SET p_shipment_id = v_shipment_id;
-
-        -- 5. Create parcel
-        INSERT INTO parcel(parcel_id,shipment_id,sender_id,recipient_id,weight_kg,description,parcel_type)
-        VALUES(p_parcel_id,v_shipment_id,p_sender_id,p_recipient_id,p_weight_kg,p_description,p_parcel_type);
-
-        -- 6. Create payment
-        SET v_pay_id = CONCAT('PAY', DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
-        INSERT INTO payment(payment_id,parcel_id,amount,method,payment_status)
-        VALUES(v_pay_id,p_parcel_id,p_amount,p_method,'pending');
-
-        -- 7. Initial tracking
-        SET v_track_id = CONCAT('TR', DATE_FORMAT(NOW(),'%Y%m%d%H%i%s'));
-        INSERT INTO tracking_status(tracking_id,parcel_id,status_type,timestamp,notes)
-        VALUES(v_track_id,p_parcel_id,'preparing to ship',NOW(),'Parcel received and logged');
-
-    COMMIT;
-END$$
-
 DROP PROCEDURE IF EXISTS sp_update_parcel$$
 CREATE PROCEDURE sp_update_parcel(
     IN p_parcel_id   VARCHAR(20),
     IN p_weight_kg   DECIMAL(8,2),
     IN p_description VARCHAR(255),
-    IN p_parcel_type VARCHAR(20)
-)
+    IN p_parcel_type VARCHAR(20))
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
-        UPDATE parcel SET weight_kg=p_weight_kg,description=p_description,parcel_type=p_parcel_type
-        WHERE parcel_id=p_parcel_id;
+        UPDATE parcel SET weight_kg=p_weight_kg,description=p_description,
+            parcel_type=p_parcel_type WHERE parcel_id=p_parcel_id;
     COMMIT;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_delete_parcel$$
 CREATE PROCEDURE sp_delete_parcel(IN p_parcel_id VARCHAR(20))
 BEGIN
+    DECLARE v_shipment_id VARCHAR(20);
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
+        SELECT shipment_id INTO v_shipment_id FROM parcel WHERE parcel_id=p_parcel_id;
         DELETE FROM tracking_status WHERE parcel_id=p_parcel_id;
-        DELETE FROM payment         WHERE parcel_id=p_parcel_id;
-        DELETE FROM parcel          WHERE parcel_id=p_parcel_id;
+        DELETE FROM payment WHERE parcel_id=p_parcel_id;
+        DELETE FROM parcel WHERE parcel_id=p_parcel_id;
+        DELETE FROM shipment WHERE shipment_id=v_shipment_id;
     COMMIT;
 END$$
 
--- ============================================================
--- TRACKING
--- ============================================================
+-- ── TRACKING ──────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_tracking_by_parcel$$
 CREATE PROCEDURE sp_get_tracking_by_parcel(IN p_parcel_id VARCHAR(20))
 BEGIN
@@ -495,52 +365,35 @@ BEGIN
     JOIN shipment  sh ON p.shipment_id  = sh.shipment_id
     JOIN rider     rd ON sh.rider_id    = rd.rider_id
     JOIN route     rt ON sh.route_id    = rt.route_id
-    WHERE ts.parcel_id = p_parcel_id
+    WHERE ts.parcel_id=p_parcel_id
     ORDER BY ts.timestamp ASC;
 END$$
 
 DROP PROCEDURE IF EXISTS sp_add_tracking_update$$
 CREATE PROCEDURE sp_add_tracking_update(
-    IN p_parcel_id  VARCHAR(20),
-    IN p_status     VARCHAR(30),
-    IN p_location   VARCHAR(100),
-    IN p_notes      VARCHAR(255)
-)
+    IN p_parcel_id VARCHAR(20),
+    IN p_status    VARCHAR(30),
+    IN p_location  VARCHAR(100),
+    IN p_notes     VARCHAR(255))
 BEGIN
     DECLARE v_track_id VARCHAR(20);
-    DECLARE v_shipment_id VARCHAR(20);
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
-        SET v_track_id = CONCAT('TR', DATE_FORMAT(NOW(),'%Y%m%d%H%i%s%f'));
+        SET v_track_id=CONCAT('TR',DATE_FORMAT(NOW(),'%Y%m%d%H%i%s%f'));
         INSERT INTO tracking_status(tracking_id,parcel_id,status_type,location,timestamp,notes)
         VALUES(v_track_id,p_parcel_id,p_status,p_location,NOW(),p_notes);
-
-        -- If delivered: mark payment as paid
-        IF p_status = 'delivered' THEN
-            UPDATE payment SET payment_status='paid', payment_date=CURDATE()
+        IF p_status='delivered' THEN
+            UPDATE payment SET payment_status='paid',payment_date=CURDATE()
             WHERE parcel_id=p_parcel_id AND payment_status='pending';
-        END IF;
-
-        -- If all parcels in shipment delivered: mark shipment completed
-        SELECT shipment_id INTO v_shipment_id FROM parcel WHERE parcel_id=p_parcel_id;
-        IF (SELECT COUNT(*) FROM parcel WHERE shipment_id=v_shipment_id) =
-           (SELECT COUNT(*) FROM tracking_status ts2
-            JOIN parcel p2 ON ts2.parcel_id=p2.parcel_id
-            WHERE p2.shipment_id=v_shipment_id AND ts2.status_type='delivered'
-            AND ts2.timestamp=(SELECT MAX(ts3.timestamp) FROM tracking_status ts3 WHERE ts3.parcel_id=ts2.parcel_id))
-        THEN
-            UPDATE shipment SET status='completed' WHERE shipment_id=v_shipment_id;
         END IF;
     COMMIT;
 END$$
 
--- ============================================================
--- PAYMENT
--- ============================================================
+-- ── PAYMENT ───────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_all_payments$$
 CREATE PROCEDURE sp_get_all_payments()
 BEGIN
-    SELECT py.*, p.parcel_id, s.full_name AS sender_name, r.full_name AS recipient_name
+    SELECT py.*, s.full_name AS sender_name, r.full_name AS recipient_name
     FROM payment py
     JOIN parcel    p ON py.parcel_id   = p.parcel_id
     JOIN sender    s ON p.sender_id    = s.sender_id
@@ -554,29 +407,29 @@ CREATE PROCEDURE sp_update_payment(
     IN p_amount     DECIMAL(10,2),
     IN p_method     VARCHAR(30),
     IN p_status     VARCHAR(10),
-    IN p_date       DATE
-)
+    IN p_date       DATE)
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION BEGIN ROLLBACK; RESIGNAL; END;
     START TRANSACTION;
-        UPDATE payment SET amount=p_amount,method=p_method,payment_status=p_status,payment_date=p_date
+        UPDATE payment SET amount=p_amount,method=p_method,
+            payment_status=p_status,payment_date=p_date
         WHERE payment_id=p_payment_id;
     COMMIT;
 END$$
 
--- ============================================================
--- DASHBOARD
--- ============================================================
+-- ── DASHBOARD ─────────────────────────────────────────────────
 DROP PROCEDURE IF EXISTS sp_get_dashboard_summary$$
 CREATE PROCEDURE sp_get_dashboard_summary()
 BEGIN
     SELECT
-        (SELECT COUNT(*) FROM parcel)  AS total_parcels,
+        (SELECT COUNT(*) FROM parcel) AS total_parcels,
         (SELECT COUNT(*) FROM rider WHERE status='active') AS active_riders,
         (SELECT COUNT(*) FROM tracking_status
             WHERE status_type='delivered' AND DATE(timestamp)=CURDATE()) AS delivered_today,
-        (SELECT COUNT(*) FROM shipment WHERE status='in transit') AS in_transit,
-        (SELECT COUNT(*) FROM shipment WHERE status='pending') AS pending_shipments,
+        (SELECT COUNT(*) FROM tracking_status ts
+            INNER JOIN (SELECT parcel_id, MAX(timestamp) AS mx FROM tracking_status GROUP BY parcel_id) latest
+            ON ts.parcel_id=latest.parcel_id AND ts.timestamp=latest.mx
+            WHERE ts.status_type='in transit') AS in_transit,
         (SELECT IFNULL(SUM(amount),0) FROM payment WHERE payment_status='paid') AS total_revenue;
 END$$
 
