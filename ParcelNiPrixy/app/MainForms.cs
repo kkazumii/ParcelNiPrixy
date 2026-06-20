@@ -6,7 +6,6 @@ using MySql.Data.MySqlClient;
 
 namespace ParcelTrackingSystem
 {
-
     // ══════════════════════════════════════════════════════
     // PROGRAM
     // ══════════════════════════════════════════════════════
@@ -20,7 +19,6 @@ namespace ParcelTrackingSystem
             Application.Run(new LoginForm());
         }
     }
-
 
     // ══════════════════════════════════════════════════════
     // LOGIN FORM
@@ -101,7 +99,6 @@ namespace ParcelTrackingSystem
             }
         }
 
-
         private Label Lbl(string t, int x, int y, int size, bool bold, Color color) =>
             new Label { Text=t, Location=new Point(x,y), AutoSize=true,
                 Font=new Font("Segoe UI", size, bold?FontStyle.Bold:FontStyle.Regular), ForeColor=color };
@@ -120,7 +117,7 @@ namespace ParcelTrackingSystem
         public DashboardForm()
         {
             this.Text = "ParcelTrack – Dashboard";
-            this.Load += (s, e) => BuildDashboard();
+            BuildDashboard();
         }
 
         private void BuildDashboard()
@@ -135,29 +132,24 @@ namespace ParcelTrackingSystem
                 {
                     var row = dt.Rows[0];
                     var stats = new[] {
-                        ("📦 Total Parcels",    row["total_parcels"]?.ToString()     ?? "0", Color.FromArgb(137,180,250)),
-                        ("🚴 Active Riders",    row["active_riders"]?.ToString()     ?? "0", Color.FromArgb(166,227,161)),
-                        ("🔄 In Transit",       row["in_transit"]?.ToString()        ?? "0", Color.FromArgb(250,179,135)),
-                        ("✅ Delivered Today",  row["delivered_today"]?.ToString()   ?? "0", Color.FromArgb(203,166,247)),
-                        ("⏳ Pending Shipments",row["pending_shipments"]?.ToString() ?? "0", Color.FromArgb(249,226,175)),
-                        ("💰 Revenue",          "₱" + (row["total_revenue"]==DBNull.Value ? "0.00" : $"{Convert.ToDecimal(row["total_revenue"]):N2}"), Color.FromArgb(166,227,161))
-                    };
+                ("📦 Total Parcels",   row["total_parcels"]?.ToString()   ?? "0", Color.FromArgb(137,180,250)),
+                ("🚴 Active Riders",   row["active_riders"]?.ToString()   ?? "0", Color.FromArgb(166,227,161)),
+                ("🔄 In Transit",      row["in_transit"]?.ToString()      ?? "0", Color.FromArgb(250,179,135)),
+                ("✅ Delivered Today", row["delivered_today"]?.ToString() ?? "0", Color.FromArgb(203,166,247)),
+                ("💰 Revenue",         "₱" + (row["total_revenue"]==DBNull.Value ? "0.00" : $"{Convert.ToDecimal(row["total_revenue"]):N2}"), Color.FromArgb(166,227,161))
+            };
 
-                    int cardW = 162;  // 155 card width + ~7 gap
-                    int x = 0; int y = 42;
-                    int maxX = pnlContent.Width - 50; // stay inside padding
-
+                    int x = 0;
                     foreach (var (title, val, color) in stats)
                     {
-                        if (x + cardW > maxX) { x = 0; y += 110; }
-                        var card = MakeCard(x, y, 155, 95);
+                        var card = MakeCard(x, 45, 175, 100);
                         card.Controls.Add(new Label
                         {
                             Text = val,
                             Font = new Font("Segoe UI", 17, FontStyle.Bold),
                             ForeColor = color,
                             AutoSize = true,
-                            Location = new Point(12, 14)
+                            Location = new Point(10, 12)
                         });
                         card.Controls.Add(new Label
                         {
@@ -165,31 +157,43 @@ namespace ParcelTrackingSystem
                             Font = new Font("Segoe UI", 8),
                             ForeColor = Color.FromArgb(166, 173, 200),
                             AutoSize = true,
-                            Location = new Point(12, 60)
+                            Location = new Point(10, 62)
                         });
                         pnlContent.Controls.Add(card);
-                        x += cardW;
+                        x += 182;
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                pnlContent.Controls.Add(new Label
+                {
+                    Text = "Stats error: " + ex.Message,
+                    ForeColor = Color.Red,
+                    AutoSize = true,
+                    Location = new Point(0, 45)
+                });
+            }
 
-            // Recent parcels
-            pnlContent.Controls.Add(new Label { Text="Recent Parcels",
-                Font=new Font("Segoe UI",12,FontStyle.Bold),
-                ForeColor=Color.FromArgb(205,214,244),
-                AutoSize=true, Location=new Point(0, 210) });
+            pnlContent.Controls.Add(new Label
+            {
+                Text = "Recent Parcels",
+                Font = new Font("Segoe UI", 12, FontStyle.Bold),
+                ForeColor = Color.FromArgb(205, 214, 244),
+                AutoSize = true,
+                Location = new Point(0, 158)
+            });
 
-            var dgv = MakeGrid(238);
-            dgv.Size = new Size(pnlContent.Width - 50, pnlContent.Height - 268);
+            var dgv = MakeGrid(185);
+            dgv.Size = new Size(pnlContent.Width - 50, pnlContent.Height - 215);
             pnlContent.Controls.Add(dgv);
-            pnlContent.Resize += (s, e) => dgv.Size = new Size(pnlContent.Width - 50, pnlContent.Height - 268);
+            pnlContent.Resize += (s, e) => dgv.Size = new Size(pnlContent.Width - 50, pnlContent.Height - 215);
 
             try
             {
                 var dt = DatabaseHelper.ExecuteProcedureTable("sp_get_all_parcels");
                 dgv.DataSource = dt;
-                HideCols(dgv,"sender_phone","recipient_phone","recipient_address","payment_id","shipment_id");
+                HideCols(dgv, "sender_phone", "recipient_phone", "recipient_address", "payment_id", "shipment_id");
             }
             catch { }
         }
