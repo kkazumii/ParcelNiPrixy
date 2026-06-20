@@ -75,7 +75,3 @@ private const string Password = ""; // ← put your password here, leave blank i
 
 ## 👥 Group 8 Members
 - *(ibet paul marquin prixy mat)*
-
-**1.** Open `ParcelNiPrixy.sln` in Visual Studio 2022
-
-**2.** Install the MySQL connector via **Package Manager Console**:
